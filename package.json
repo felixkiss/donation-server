@@ -1,0 +1,24 @@
+{
+  "name": "donation-server",
+  "author": {
+    "name": "Florian",
+    "email": "privat@florian.ws"
+  },
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "@koa/router": "^10.0.0",
+    "alphanumeric-id": "^1.0.1",
+    "joi": "^17.4.0",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "stripe": "^8.142.0",
+    "toml": "^3.0.0"
+  }
+}
