@@ -1,4 +1,4 @@
-import {postDonate} from "./routes/donate.js"
+import {postDonateSepa} from "./routes/donate_sepa.js"
 import {Stripe} from "stripe";
 import Koa from "koa"
 import Router from "@koa/router";
@@ -49,7 +49,7 @@ if (config["server"]["corsAny"]) {
 // Router
 const appRouter = new Router();
 appRouter.get("/", ctx => ctx.body = {info: "This is a donation server using stripe made with <3"})
-appRouter.post("/donate", ...postDonate)
+appRouter.post("/donate/sepa", ...postDonateSepa)
 
 app.use(appRouter.routes());
 app.use(appRouter.allowedMethods());

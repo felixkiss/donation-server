@@ -1,9 +1,9 @@
 import Joi from "joi";
 import {getJoiMiddleware} from "../shared.js";
 import {stripe} from "../main.js";
-import config from "../config.js";
+import {getOrCreateCustomer, getOrCreatePrice} from "./donate_shared";
 
-export const postDonate = [
+export const postDonateSepa = [
   getJoiMiddleware(Joi.object({
     email: Joi.string().email().required(),
     type: Joi.string().allow("one-time", "monthly").required(),
@@ -12,27 +12,20 @@ export const postDonate = [
   })),
   async (ctx) => {
     const {email, type, sourceId, amount} = ctx.request.body;
-    let customer = (await stripe.customers.list({
-      email: email,
-      limit: 1
-    })).data[0];
-    if (customer == null) {
-      ctx.log(`No customer found for email ${email}. Creating a new one`)
-      customer = await stripe.customers.create({
-        email: email
-      });
-      ctx.log(`Created new customer ${customer.id}`)
-    } else {
-      ctx.log(`Found customer for email ${email}, customer ${customer.id}`)
-    }
+    const customer = getOrCreateCustomer(email);
 
+    // Get and check source
     let source = await stripe.sources.retrieve(sourceId);
     if (source.currency !== "eur") {
       return ctx.withError(400, "Donations are only allowed in EUR");
     }
+    if (source.sepa_debit == null) {
+      return ctx.withError(400, "This route only allows for SEPA donations");
+    }
 
     ctx.log(`Received source ${source.id}`)
 
+    // Check for existing source on the customer
     const customerSources = await stripe.paymentMethods.list({customer: customer.id, type: "sepa_debit"});
     const existingPaymentMethod = customerSources.data.find(method => method.id.startsWith("src_") &&
       method.sepa_debit.fingerprint === source.sepa_debit.fingerprint);
@@ -45,6 +38,7 @@ export const postDonate = [
       ctx.log(`Attached new source to customer`)
     }
 
+    // Create final payment / subscription
     ctx.log(`Payment type: ${type}, Amount (EUR): ${amount}`)
     if (type === "one-time") {
       const charge = await stripe.charges.create({
@@ -55,20 +49,7 @@ export const postDonate = [
       });
       ctx.log(`Created a one time payment ${charge.id}`)
     } else if (type === "monthly") {
-      let price = await getPredefiendPrice(amount, type);
-
-      if (price == null) {
-        price = await stripe.prices.create({
-          currency: "eur",
-          unit_amount: amount * 100,
-          product: config["stripe"]["monthlyProductId"],
-          recurring: {
-            interval: "month"
-          }
-        });
-        ctx.log(`No pre-defined price found. Created new price ${price.id}`)
-      }
-
+      const price = getOrCreatePrice(amount, type);
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [
@@ -86,8 +67,3 @@ export const postDonate = [
   }
 ]
 
-async function getPredefiendPrice(amount, type) {
-  const price = (config["stripe"]["predefinedPrices"] ?? [])
-    .find(price => price.amount === amount && price.interval === type);
-  return price != null ? stripe.prices.retrieve(price.id) : null;
-}
