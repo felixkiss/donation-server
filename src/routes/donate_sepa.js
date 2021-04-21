@@ -1,7 +1,7 @@
 import Joi from "joi";
 import {getJoiMiddleware} from "../shared.js";
-import {stripe} from "../main.js";
-import {getOrCreateCustomer, getOrCreatePrice} from "./donate_shared.js";
+import {stripe} from "../stripe_helper.js";
+import {getOrCreateCustomer, getSubscriptionPrice} from "./donate_shared.js";
 
 export const postDonateSepa = [
   getJoiMiddleware(Joi.object({
@@ -49,7 +49,7 @@ export const postDonateSepa = [
       });
       ctx.log(`Created a one time payment ${charge.id}`)
     } else if (type === "monthly") {
-      const price = await getOrCreatePrice(ctx, amount, type);
+      const price = await getSubscriptionPrice(ctx, amount);
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [

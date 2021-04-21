@@ -1,4 +1,4 @@
-import {stripe} from "../main.js";
+import {addPriceToCache, getPricesByProduct, stripe} from "../stripe_helper.js";
 import config from "../config.js";
 
 export async function getOrCreateCustomer(ctx, email) {
@@ -19,26 +19,30 @@ export async function getOrCreateCustomer(ctx, email) {
   return customer;
 }
 
-export async function getOrCreatePrice(ctx, amount, type) {
-  let price = await getPredefiendPrice(amount, type);
+export async function getSubscriptionPrice(ctx, amount) {
+  const productId = config["stripe"]["monthlyProductId"];
+  const allPrices = await getPricesByProduct(productId);
+  let price = allPrices.find(price => price.recurring != null
+    && price.recurring.interval === "month"
+    && price.unit_amount === amount * 100
+    && price.currency === "eur");
+
   if (price != null) {
+    ctx.log(`Reusing existing price ${price.id}`);
+    await addPriceToCache(productId);
     return price;
   }
 
   price = await stripe.prices.create({
+    product: productId,
     currency: "eur",
     unit_amount: amount * 100,
-    product: config["stripe"]["monthlyProductId"],
     recurring: {
       interval: "month"
     }
   });
-  ctx.log(`No pre-defined price found. Created new price ${price.id}`)
+  ctx.log(`No price found. Created new price ${price.id}`)
+
   return price;
 }
 
-async function getPredefiendPrice(amount, type) {
-  const price = (config["stripe"]["predefinedPrices"] ?? [])
-    .find(price => price.amount === amount && price.interval === type);
-  return price != null ? stripe.prices.retrieve(price.id) : null;
-}

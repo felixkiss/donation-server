@@ -1,12 +1,9 @@
 import {postDonateSepa} from "./routes/donate_sepa.js"
-import {Stripe} from "stripe";
 import Koa from "koa"
 import Router from "@koa/router";
 import koaBody from 'koa-body';
 import config from "./config.js"
 import alphanumeric from "alphanumeric-id";
-
-export const stripe = new Stripe(config["stripe"]["secretKey"], {apiVersion: "2020-08-27"});
 
 const app = new Koa();
 
