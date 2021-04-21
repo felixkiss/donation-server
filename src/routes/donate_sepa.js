@@ -1,18 +1,18 @@
 import Joi from "joi";
 import {getJoiMiddleware} from "../shared.js";
 import {stripe} from "../main.js";
-import {getOrCreateCustomer, getOrCreatePrice} from "./donate_shared";
+import {getOrCreateCustomer, getOrCreatePrice} from "./donate_shared.js";
 
 export const postDonateSepa = [
   getJoiMiddleware(Joi.object({
     email: Joi.string().email().required(),
     type: Joi.string().allow("one-time", "monthly").required(),
     amount: Joi.number().min(1).max(1000).precision(2).required(),
-    sourceId: Joi.string().min(5).max(100).required()
+    sourceId: Joi.string().min(5).max(50).required()
   })),
   async (ctx) => {
     const {email, type, sourceId, amount} = ctx.request.body;
-    const customer = getOrCreateCustomer(email);
+    const customer = await getOrCreateCustomer(ctx, email);
 
     // Get and check source
     let source = await stripe.sources.retrieve(sourceId);
@@ -49,7 +49,7 @@ export const postDonateSepa = [
       });
       ctx.log(`Created a one time payment ${charge.id}`)
     } else if (type === "monthly") {
-      const price = getOrCreatePrice(amount, type);
+      const price = await getOrCreatePrice(ctx, amount, type);
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [

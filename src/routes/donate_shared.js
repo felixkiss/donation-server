@@ -1,7 +1,7 @@
-import {stripe} from "../main";
-import config from "../config";
+import {stripe} from "../main.js";
+import config from "../config.js";
 
-export async function getOrCreateCustomer(email) {
+export async function getOrCreateCustomer(ctx, email) {
   let customer = (await stripe.customers.list({
     email: email,
     limit: 1
@@ -19,7 +19,7 @@ export async function getOrCreateCustomer(email) {
   return customer;
 }
 
-export async function getOrCreatePrice(amount, type) {
+export async function getOrCreatePrice(ctx, amount, type) {
   let price = await getPredefiendPrice(amount, type);
   if (price != null) {
     return price;
