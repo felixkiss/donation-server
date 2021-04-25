@@ -57,6 +57,7 @@ if (config["server"]["corsAny"]) {
 const appRouter = new Router();
 appRouter.get("/", ctx => ctx.body = {info: "This is a donation server using stripe made with <3"})
 appRouter.post("/donate/sepa", ...postDonateSepa)
+appRouter.post("/donate/card", ...postDonateCard)
 
 app.use(appRouter.routes());
 app.use(appRouter.allowedMethods());
