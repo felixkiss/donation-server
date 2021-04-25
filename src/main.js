@@ -4,6 +4,16 @@ import Router from "@koa/router";
 import koaBody from 'koa-body';
 import config from "./config.js"
 import alphanumeric from "alphanumeric-id";
+import {postDonateCard} from "./routes/donate_card.js";
+
+console.log(`
+      _                   _   _                                                
+   __| | ___  _ __   __ _| |_(_) ___  _ __        ___  ___ _ ____   _____ _ __ 
+  / _\` |/ _ \\| '_ \\ / _\` | __| |/ _ \\| '_ \\ _____/ __|/ _ \\ '__\\ \\ / / _ \\ '__|
+ | (_| | (_) | | | | (_| | |_| | (_) | | | |_____\\__ \\  __/ |   \\ V /  __/ |   
+  \\__,_|\\___/|_| |_|\\__,_|\\__|_|\\___/|_| |_|     |___/\\___|_|    \\_/ \\___|_|   
+
+`)
 
 const app = new Koa();
 
