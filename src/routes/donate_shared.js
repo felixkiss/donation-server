@@ -48,7 +48,6 @@ export async function getSubscriptionPrice(ctx, amount) {
 
   if (price != null) {
     ctx.log(`Reusing existing price ${price.id}`);
-    await addPriceToCache(productId);
     return price;
   }
 

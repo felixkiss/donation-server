@@ -11,7 +11,8 @@ export async function getPricesByProduct(productId) {
   }
 
   const listCall = stripe.prices.list({product: productId});
-  allCachedPrices[productId] = cachedPrices = await autoPagingToArray(listCall)
+  cachedPrices = await autoPagingToArray(listCall);
+  allCachedPrices[productId] = cachedPrices;
   return cachedPrices;
 }
 
