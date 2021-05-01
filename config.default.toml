@@ -1,0 +1,7 @@
+[stripe]
+secretKey = ""
+monthlyProductId = ""
+
+[server]
+port = 3000
+corsAny = false
