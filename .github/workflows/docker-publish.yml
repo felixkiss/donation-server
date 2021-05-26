@@ -9,7 +9,7 @@ on:
       - v*
 
 env:
-  IMAGE_NAME: donation/server
+  IMAGE_NAME: donation-server
 
 jobs:
   push:
