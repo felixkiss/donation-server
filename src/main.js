@@ -43,6 +43,21 @@ app.use(async (ctx, next) => {
   await next();
 });
 
+// Real ip
+app.use(async (ctx, next) => {
+  const realIpHeaders = config["server"]["realIpHeaders"] ?? [];
+
+  for (let realIpHeader of realIpHeaders) {
+    const realIp = ctx.get(realIpHeader);
+    if (realIp != null) {
+      ctx.ip = realIp;
+      break
+    }
+  }
+
+  await next();
+})
+
 // CORS
 if (config["server"]["corsAny"]) {
   app.use(async (ctx, next) => {

@@ -1,7 +1,7 @@
 import {getJoiMiddleware} from "../shared.js";
 import Joi from "joi";
 import {
-  addChargeOrSubscriptionForSource,
+  addChargeOrSubscriptionForSource, DonationType,
   getOrCreateCustomer,
   getOrCreateSource
 } from "./donate_shared.js";
@@ -10,7 +10,7 @@ import {stripe} from "../stripe_helper.js";
 export const postDonateCard = [
   getJoiMiddleware(Joi.object({
     email: Joi.string().email().required(),
-    type: Joi.string().allow("one-time", "monthly").required(),
+    type: Joi.string().allow(...Object.values(DonationType)).required(),
     amount: Joi.number().min(1).max(1000).precision(2).required(),
     sourceId: Joi.string().min(5).max(50).required()
   })),

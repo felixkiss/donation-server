@@ -1,5 +1,11 @@
-import {addPriceToCache, getPricesByProduct, stripe} from "../stripe_helper.js";
+import {getPricesByProduct, stripe} from "../stripe_helper.js";
 import config from "../config.js";
+import {handleMauticDonation} from "../mautic_helper.js";
+
+export const DonationType = Object.freeze({
+  OneTime: "one-time",
+  Monthly: "monthly"
+})
 
 export async function getOrCreateCustomer(ctx, email) {
   let customer = (await stripe.customers.list({
@@ -60,13 +66,16 @@ export async function getSubscriptionPrice(ctx, amount) {
     }
   });
   ctx.log(`No price found. Created new price ${price.id}`)
+  allPrices.push(price);
 
   return price;
 }
 
 export async function addChargeOrSubscriptionForSource(ctx, type, amount, customer, source) {
   ctx.log(`Payment type: ${type}, Amount (EUR): ${amount}`)
-  if (type === "one-time") {
+
+  let mauticPromise;
+  if (type === DonationType.OneTime) {
     const charge = await stripe.charges.create({
       customer: customer.id,
       amount: amount * 100,
@@ -74,7 +83,9 @@ export async function addChargeOrSubscriptionForSource(ctx, type, amount, custom
       source: source.id
     });
     ctx.log(`Created a one time payment ${charge.id}`)
-  } else if (type === "monthly") {
+
+    mauticPromise = handleMauticDonation(ctx, customer, {type, amount, source, charge})
+  } else if (type === DonationType.Monthly) {
     const price = await getSubscriptionPrice(ctx, amount);
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
@@ -84,6 +95,11 @@ export async function addChargeOrSubscriptionForSource(ctx, type, amount, custom
       default_source: source.id
     });
     ctx.log(`Created a monthly subscription ${subscription.id}`)
+
+    mauticPromise = handleMauticDonation(ctx, customer, {type, amount, source, subscription})
   }
+
+  await mauticPromise
+    .catch(err => ctx.log(`Failed mautic call`, err))
 }
 
