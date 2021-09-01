@@ -5,6 +5,7 @@ import koaBody from 'koa-body';
 import config from "./config.js"
 import alphanumeric from "alphanumeric-id";
 import {postDonateCard} from "./routes/donate_card.js";
+import {postStripeWebhook} from "./routes/stripe_webhook.js";
 
 console.log(`
       _                   _   _                                                
@@ -18,7 +19,9 @@ console.log(`
 const app = new Koa();
 
 // Body handler
-app.use(koaBody());
+app.use(koaBody({
+  includeUnparsed: true
+}));
 
 // Global error handling
 app.use(async (ctx, next) => {
@@ -73,6 +76,7 @@ const appRouter = new Router();
 appRouter.get("/", ctx => ctx.body = {info: "This is a donation server using stripe made with <3"})
 appRouter.post("/donate/sepa", ...postDonateSepa)
 appRouter.post("/donate/card", ...postDonateCard)
+appRouter.post("/webhook", ...postStripeWebhook)
 
 app.use(appRouter.routes());
 app.use(appRouter.allowedMethods());
