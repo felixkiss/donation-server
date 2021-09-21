@@ -78,11 +78,11 @@ export async function handleMauticDonation(ctx, stripeCustomer, donation) {
 
   if (donation.type === DonationType.OneTime) {
     await addNote(contact,
-      `Donated ${donation.amount / 100} euros using ${donation.source.type} ` +
+      `Donated ${donation.amount / 100} euros using ${donation.paymentMethod} ` +
       `(chargeId=${donation.charge.id})`)
   } else if (donation.type === DonationType.Monthly) {
     await addNote(contact,
-      `Subscribed for ${donation.amount / 100} euros using ${donation.source.type} `
+      `Subscribed for ${donation.amount / 100} euros using ${donation.paymentMethod} `
       + `(subscriptionId=${donation.subscription.id})`)
   }
 

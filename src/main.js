@@ -6,6 +6,8 @@ import config from "./config.js"
 import alphanumeric from "alphanumeric-id";
 import {postDonateCard} from "./routes/donate_card.js";
 import {postStripeWebhook} from "./routes/stripe_webhook.js";
+import {postCreateIntent} from "./routes/create_intent.js";
+import {postFinishIntent} from "./routes/finish_intent.js";
 
 console.log(`
       _                   _   _                                                
@@ -76,6 +78,8 @@ const appRouter = new Router();
 appRouter.get("/", ctx => ctx.body = {info: "This is a donation server using stripe made with <3"})
 appRouter.post("/donate/sepa", ...postDonateSepa)
 appRouter.post("/donate/card", ...postDonateCard)
+appRouter.post("/payment-intent", ...postCreateIntent)
+appRouter.post("/payment-intent/finish", ...postFinishIntent)
 appRouter.post("/webhook", ...postStripeWebhook)
 
 app.use(appRouter.routes());

@@ -1,11 +1,20 @@
 import {getPricesByProduct, stripe} from "../stripe_helper.js";
 import config from "../config.js";
 import {handleMauticDonation} from "../mautic_helper.js";
+import {getJoiMiddleware} from "../shared.js";
+import Joi from "joi";
 
 export const DonationType = Object.freeze({
   OneTime: "one-time",
   Monthly: "monthly"
 })
+
+export const donateValidator = getJoiMiddleware(Joi.object({
+  email: Joi.string().email().required(),
+  type: Joi.string().allow(DonationType.Monthly).required(),
+  amount: Joi.number().min(1).max(1000).precision(2).required(),
+  sourceId: Joi.string().min(5).max(50).required()
+}));
 
 export async function getOrCreateCustomer(ctx, email) {
   let customer = (await stripe.customers.list({
@@ -71,35 +80,24 @@ export async function getSubscriptionPrice(ctx, amount) {
   return price;
 }
 
-export async function addChargeOrSubscriptionForSource(ctx, type, amount, customer, source) {
-  ctx.log(`Payment type: ${type}, Amount (EUR): ${amount}`)
+export async function addSubscriptionForSource(ctx, amount, customer, source) {
+  ctx.log(`Donation type: monthly, Amount (EUR): ${amount}`)
 
-  let mauticPromise;
-  if (type === DonationType.OneTime) {
-    const charge = await stripe.charges.create({
-      customer: customer.id,
-      amount: amount * 100,
-      currency: 'eur',
-      source: source.id
-    });
-    ctx.log(`Created a one time payment ${charge.id}`)
+  const price = await getSubscriptionPrice(ctx, amount);
+  const subscription = await stripe.subscriptions.create({
+    customer: customer.id,
+    items: [
+      {price: price.id}
+    ],
+    default_source: source.id
+  });
+  ctx.log(`Created a monthly subscription ${subscription.id}`)
 
-    mauticPromise = handleMauticDonation(ctx, customer, {type, amount, source, charge})
-  } else if (type === DonationType.Monthly) {
-    const price = await getSubscriptionPrice(ctx, amount);
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [
-        {price: price.id}
-      ],
-      default_source: source.id
-    });
-    ctx.log(`Created a monthly subscription ${subscription.id}`)
-
-    mauticPromise = handleMauticDonation(ctx, customer, {type, amount, source, subscription})
-  }
-
-  await mauticPromise
-    .catch(err => ctx.log(`Failed mautic call`, err))
+  await handleMauticDonation(ctx, customer, {
+    type: DonationType.Monthly,
+    paymentMethod: source.type,
+    amount,
+    subscription
+  }).catch(err => ctx.log(`Failed mautic call`, err))
 }
 
