@@ -5,7 +5,7 @@ monthlyProductId = ""
 [server]
 port = 3000
 corsAny = false
-realIpHeaders = []
+realIpHeader = ""
 
 [mautic]
 url = ""
