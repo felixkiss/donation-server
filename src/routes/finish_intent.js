@@ -40,7 +40,7 @@ export const postFinishIntent = [
 
     await handleMauticDonation(ctx, customer, {
       type: DonationType.OneTime,
-      amount: paymentIntent.amount,
+      amountCents: paymentIntent.amount,
       paymentMethod: paymentMethod.type,
       charge
     })

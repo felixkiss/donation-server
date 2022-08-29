@@ -80,10 +80,10 @@ export async function getSubscriptionPrice(ctx, amount) {
   return price;
 }
 
-export async function addSubscriptionForSource(ctx, amount, customer, source) {
-  ctx.log(`Donation type: monthly, Amount (EUR): ${amount}`)
+export async function addSubscriptionForSource(ctx, amountEuros, customer, source) {
+  ctx.log(`Donation type: monthly, Amount (EUR): ${amountEuros}`)
 
-  const price = await getSubscriptionPrice(ctx, amount);
+  const price = await getSubscriptionPrice(ctx, amountEuros);
   const subscription = await stripe.subscriptions.create({
     customer: customer.id,
     items: [
@@ -96,7 +96,7 @@ export async function addSubscriptionForSource(ctx, amount, customer, source) {
   await handleMauticDonation(ctx, customer, {
     type: DonationType.Monthly,
     paymentMethod: source.type,
-    amount,
+    amountCents: amountEuros / 100,
     subscription
   }).catch(err => ctx.log(`Failed mautic call`, err))
 }
