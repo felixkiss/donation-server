@@ -43,7 +43,7 @@ export const postFinishIntent = [
       amountCents: paymentIntent.amount,
       paymentMethod: paymentMethod.type,
       charge
-    })
+    }).catch(err => ctx.log(`Failed mautic call`, err))
 
     ctx.body = {
       okay: true
