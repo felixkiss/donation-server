@@ -9,26 +9,36 @@ export const DonationType = Object.freeze({
   Monthly: "monthly"
 })
 
-export const donateValidator = getJoiMiddleware(Joi.object({
-  email: Joi.string().email().required(),
-  type: Joi.string().allow(DonationType.Monthly).required(),
-  amount: Joi.number().min(1).max(1000).precision(2).required(),
-  sourceId: Joi.string().min(5).max(50).required()
-}));
+export const donateValidator = [
+  getJoiMiddleware(Joi.object({
+    email: Joi.string().email().required(),
+    type: Joi.string().allow(DonationType.Monthly).required(),
+    amount: Joi.number().min(1).max(500).precision(2).required(),
+    sourceId: Joi.string().min(5).max(50).required()
+  }))
+];
 
-export async function getOrCreateCustomer(ctx, email) {
+export async function getOrCreateCustomer(ctx, email, name) { //TODO add name to all usages
   let customer = (await stripe.customers.list({
     email: email,
     limit: 1
   })).data[0];
   if (customer != null) {
-    ctx.log(`Found customer for email ${email}, customer ${customer.id}`);
+    ctx.log(`Found customer for email ${email}, name ${name}, customer ${customer.id}`);
+    if (customer.name == null || customer.name.trim().length < 1) {
+      ctx.log(`Updating customer for email ${email}, name ${name}`);
+      await stripe.customers.update(customer.id, {
+        name,
+        email
+      });
+    }
     return customer;
   }
 
-  ctx.log(`No customer found for email ${email}. Creating a new one`)
+  ctx.log(`No customer found for email ${email}, name ${name}. Creating a new one`)
   customer = await stripe.customers.create({
-    email: email
+    email,
+    name
   });
   ctx.log(`Created new customer ${customer.id}`)
   return customer;
