@@ -11,14 +11,15 @@ export const DonationType = Object.freeze({
 
 export const donateValidator = [
   getJoiMiddleware(Joi.object({
-    email: Joi.string().email().required(),
+    name: Joi.string().required().trim().min(3),
+    email: Joi.string().trim().required().email(),
     type: Joi.string().allow(DonationType.Monthly).required(),
     amount: Joi.number().min(1).max(500).precision(2).required(),
     sourceId: Joi.string().min(5).max(50).required()
   }))
 ];
 
-export async function getOrCreateCustomer(ctx, email, name) { //TODO add name to all usages
+export async function getOrCreateCustomer(ctx, email, name) {
   let customer = (await stripe.customers.list({
     email: email,
     limit: 1

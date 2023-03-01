@@ -9,8 +9,8 @@ export const postDonateSepa = [
   donateValidator,
 
   async (ctx) => {
-    const {email, sourceId, amount} = ctx.request.body;
-    const customer = await getOrCreateCustomer(ctx, email);
+    const {name, email, sourceId, amount} = ctx.request.body;
+    const customer = await getOrCreateCustomer(ctx, email, name);
 
     // Get and check source
     let inputSource = await stripe.sources.retrieve(sourceId);

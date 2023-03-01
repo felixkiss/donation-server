@@ -5,13 +5,14 @@ import {getOrCreateCustomer} from "./donate_shared.js";
 
 export const postCreateIntent = [
   getJoiMiddleware(Joi.object({
-    email: Joi.string().email().required(),
+    name: Joi.string().required().trim().min(3),
+    email: Joi.string().trim().required().email(),
     amount: Joi.number().min(1).max(1000).precision(2).required(),
   })),
 
   async (ctx) => {
-    const {amount, email} = ctx.request.body;
-    const customer = await getOrCreateCustomer(ctx, email);
+    const {amount, email, name} = ctx.request.body;
+    const customer = await getOrCreateCustomer(ctx, email, name);
 
     ctx.log(`Creating payment intent (Email: ${email}, Amount (EUR): ${amount})`)
 
