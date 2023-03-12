@@ -6,7 +6,7 @@ import {
 } from "./donate_shared.js";
 
 export const postDonateSepa = [
-  donateValidator,
+  ...donateValidator,
 
   async (ctx) => {
     const {name, email, sourceId, amount} = ctx.request.body;

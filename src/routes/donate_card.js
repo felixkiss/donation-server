@@ -6,7 +6,7 @@ import {
 import {stripe} from "../stripe_helper.js";
 
 export const postDonateCard = [
-  donateValidator,
+  ...donateValidator,
 
   async (ctx) => {
     const {name, email, sourceId, amount} = ctx.request.body;

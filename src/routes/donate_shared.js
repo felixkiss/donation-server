@@ -26,7 +26,7 @@ export async function getOrCreateCustomer(ctx, email, name) {
   })).data[0];
   if (customer != null) {
     ctx.log(`Found customer for email ${email}, name ${name}, customer ${customer.id}`);
-    if (customer.name == null || customer.name.trim().length < 1) {
+    if (customer.name !== name) {
       ctx.log(`Updating customer for email ${email}, name ${name}`);
       await stripe.customers.update(customer.id, {
         name,
