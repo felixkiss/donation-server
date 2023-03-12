@@ -1,6 +1,12 @@
 [stripe]
+publicKey = ""
 secretKey = ""
 monthlyProductId = ""
+endpointSecret = ""
+monthlyProductId = ""
+predefinedPrices = [
+    # {interval: "one-time", amount: 100, id: 'price_...'}
+]
 
 [server]
 port = 3000
