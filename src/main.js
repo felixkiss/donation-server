@@ -68,6 +68,11 @@ if (config["server"]["corsAny"]) {
 // Router
 const appRouter = new Router();
 appRouter.get("/", ctx => ctx.body = {info: "This is a donation server using stripe made with <3"})
+appRouter.get("/config", async (ctx) => {
+  ctx.body = {
+    publicKey: config["stripe"]["publicKey"]
+  }
+});
 appRouter.post("/donate/sepa", ...postDonateSepa)
 appRouter.post("/donate/card", ...postDonateCard)
 appRouter.post("/payment-intent", ...postCreateIntent)
