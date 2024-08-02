@@ -19,7 +19,7 @@ export const postFinishIntent = [
       return ctx.withError(400, "Invalid payment intent status")
     }
 
-    const charge = paymentIntent.charges.data[0]
+    const charge = await stripe.charges.retrieve(paymentIntent.latest_charge)
     if (charge == null) {
       return ctx.withError(404, "Unable to retrieve charge from payment intent")
     }

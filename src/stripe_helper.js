@@ -2,7 +2,7 @@ import {Stripe} from "stripe";
 import config from "./config.js";
 
 const allCachedPrices = {};
-export const stripe = new Stripe(config["stripe"]["secretKey"], {apiVersion: "2020-08-27"});
+export const stripe = new Stripe(config["stripe"]["secretKey"], {apiVersion: "2024-06-20"});
 
 export async function getPricesByProduct(productId) {
   let cachedPrices = allCachedPrices[productId];
