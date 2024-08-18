@@ -37,7 +37,7 @@ export const postFinishIntent = [
     }
 
     // Figure out donation type - if it has an invoice associated, it is a subscription
-    const donationType = paymentIntent.invoice ? DonationType.Monthly : DonationType.OneTime;
+    const donationType = paymentIntent.invoice != null ? DonationType.Monthly : DonationType.OneTime;
 
     ctx.log(`Finishing payment intent ${paymentIntent.id}, amount: ${paymentIntent.amount}`)
 
